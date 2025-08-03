@@ -1,4 +1,9 @@
-from flask import Flask, render_template, url_for,request,jsonify
+from flask import Flask, render_template, url_for,request
+import requests as req
+import json
+import cloudinary
+import cloudinary.uploader
+
 
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -6,142 +11,395 @@ from email.mime.text import MIMEText
 from email import encoders
 import os
 
+app = Flask(__name__)
 
-respostas = {
-    "olá": "Olá! Como posso ajudar você?",
-    
-    "oy": "Oy! Como posso ajudar você?",
-    
-    
-    "podes me ajudar":"Claro que sim! Como posso te ajudar?",
-    "podes me ajudar?":"Claro que sim! Como posso te ajudar?",
-    "pode me ajudar":"Claro que sim! Como posso te ajudar?",
-    "pode me ajudar?":"Claro que sim! Como posso te ajudar?",
-    
-    
-    "qual seu nome": "Eu sou o assistente da BSoft Tecnology.",
-    "como se chama": "ChatBot da BSoft",
-    "como se chama?": "ChatBot da BSoft.",
-    
-    
-    "bs": "significa: Buch Software's ,Que é o nome da empresa.",
-    
-    "oque é bs": "significa: Buch Software's ,Que é o nome da empresa.",
-    
-    
-    
-    
-    
-    "tchao": "Até mais! Obrigado volte sempre",
-    "adeus": "Até logo! Obrigado pela visita.",
-    
-    "obrigado": "De nada! Fico feliz em ajudar.",
-    "obrigada": "De nada! Fico feliz em ajudar.",
-    "muito obridado": "Optimo! Ficaste Satisfeito! Fico feliz em ajudar.",
-    "muito obridada": "Optimo! Ficaste Satisfeito! Fico feliz em ajudar.",
-    
-    
-    "este chat está disponivel 24h por dia?":"Sim, Estou Aqui 24h por dia para te ajudar no que eu poder.",
-    
-    
-    
-    "oque pode fazer por me":"Te dar Informacões sobre a BSoft.",
-    
-    
-    
-    "quero um site":"Optimo!, fale com Simao Lucas, O contato do whatsapp é +258 869319159.",
-    
-    
-    "quero um blog": "Optimo! Vou te passar o numero do Whatsapp do responsavel: +258 879349159",
-    
-    
-    "quem e dono da Bsoft":"É Simao Lucas Simao, Fundador CEO",
-    "quem e dono da BSoft":"É Simao Lucas Simao, Fundador CEO",
-    "quem e dono da Bsoft?":"É Simao Lucas Simao, Fundador CEO",
-    "ola": "Oy como posso te ajudar?",
-    
-    
-    
-    "quem é voce":"Sou uma IA da BSoft, Estou aqui para te ajudar.",
-    "quem é vôce?":"Sou uma IA da BSoft, Estou aqui para te ajudar.",
-    
-    
-    
-    "quem e voce":"Sou uma IA da BSoft, Estou aqui para te ajudar.",
-    
-    "quem e voce?":"Sou uma IA da BSoft, Estou aqui para te ajudar.",
-    
-    "quanto custa um blog": "Depende das paginas e suas funcionalidades, e muito mais, mais o preço pode comessar em torno de 9.000 MTS dependendo do blog.",
-    
-    "quanto custa um blog?": "Depende das paginas e suas funcionalidades, e muito mais, mais o preço pode comessar em torno de 9.000 MTS dependendo do blog.",
-    
-    
-    "quanto custa um site": "Depende das paginas e suas funcionalidades, e muito mais, mais o preço pode comessar em torno de 14.000 MTS dependendo do site. Mais para um blog pode ser em torno de 9.000 MTS",
-    
-    
-    "quanto custa um site?": "Depende das paginas e suas funcionalidades, e muito mais, mais o preço pode comessar em torno de 14.000 MTS dependendo do site. Mais para um blog pode ser em torno de 9.000 MTS",
-    
-    
-    "quanto custa um app": "Um Aplicativo pode variar dependendo das suas funcionalidades mais comessa em torno de 15.000 MTS um aplicativo Android, se quiser Aplicativo IOS comessa em tormo dos 20.000 MTS",
-    
-    "quanto custa um app?": "Um Aplicativo pode variar dependendo das suas funcionalidades mais comessa em torno de 15.000 MTS um aplicativo Android, se quiser Aplicativo IOS comessa em tormo dos 20.000 MTS",
-    
-    "quanto custa um aplicativo": "Um Aplicativo pode variar dependendo das suas funcionalidades mais comessa em torno de 15.000 MTS um aplicativo Android, se quiser Aplicativo IOS comessa em tormo dos 20.000 MTS",
-    
-    
-    "quanto custa um aplicativo?": "Um Aplicativo pode variar dependendo das suas funcionalidades mais comessa em torno de 15.000 MTS um aplicativo Android, se quiser Aplicativo IOS comessa em tormo dos 20.000 MTS",
-    
-    
-    "oque é a bsoft": "BSoft Tecnology é uma empresa de desevolvimento de software, (sites, aplicativos, sistemas de gestao, sistema de instituicões de ensino.)",
-    "oque é a bsoft?": "BSoft Tecnology é uma empresa de desevolvimento de software, (sites, aplicativos, sistemas de gestao, sistema de instituicões de ensino.)",
-    "oque e a bsoft": "BSoft Tecnology é uma empresa de desevolvimento de software, (sites, aplicativos, sistemas de gestao, sistema de instituicões de ensino.)",
-    "oque é bsoft": "BSoft Tecnology é uma empresa de desevolvimento de software, (sites, aplicativos, sistemas de gestao, sistema de instituicões de ensino.)",
-    
-    "oque é bsoft?": "BSoft Tecnology é uma empresa de desevolvimento de software, (sites, aplicativos, sistemas de gestao, sistema de instituicões de ensino.)",
-    
-    "oque e bsoft": "BSoft Tecnology é uma empresa de desevolvimento de software, (sites, aplicativos, sistemas de gestao, sistema de instituicões de ensino.)",
-    
-    
-    
-    "contato": "whatsapp e tell: +258 879349159",
-    "vosso contato": "whatsapp e tell: +258 879349159",
-    "contacto": "whatsapp e tell: +258 879349159",
-    "vosso contacto": "whatsapp e tell: +258 879349159",
-    "como contactar voces": "whatsapp e tell: +258 879349159",
-    
-    
-    
-    "oque é blog?": "Nao estou aqui para isso! Estou aqui para dar informacões sobre a BSoft.",
-    
-    "oque é blog": "Nao estou aqui para isso! Estou aqui para dar informacões sobre a BSoft.",
-    
-    "oque é site": "Nao estou aqui para isso! Estou aqui para dar informacões sobre a BSoft.",
-    
-    "oque é um blog": "Nao estou aqui para isso! Estou aqui para dar informacões sobre a BSoft.",
-    
-    "oque é um blog?": "Nao estou aqui para isso! Estou aqui para dar informacões sobre a BSoft.",
-    
-    "oque é um site?": "Nao estou aqui para isso! Estou aqui para dar informacões sobre a BSoft.",
-    "oque é um site": "Nao estou aqui para isso! Estou aqui para dar informacões sobre a BSoft.",
-    
-    "va a pagina inicial": "Não consigo fazer isso!",
-    "volte a pagina inicial": "Não consigo fazer isso!",
-    
-    "volte a página inicial": "Não consigo fazer isso!",
-    
-}
+# Configurar Cloudinary com suas credenciais
+cloudinary.config(
+    cloud_name='dhfytj5nq',
+    api_key='144515411569918',
+    api_secret='qvlOr_FAX61h61GzlkMig9W2p6w'
+)
 
 
-def enviarMSG(nome,numero,email,dsjo):
+
+app = Flask(__name__)
+
+
+
+
+
+def addproduto(nome,category,preco,descricao,image_url):
 	
-	allMSG = "Nome: "+ nome+"\n<br>Tell: "+ numero+"\n<br>Email: "+email+"\n<br>"+dsjo+"\n<br>Mensagem do site"
+	fire_url = "https://bs-siteof-sell-default-rtdb.firebaseio.com/produtos/.json"
+	
+	
+	num_artigo = "1"
+	produto = {
+			"nome": nome,
+			"numero": num_artigo,
+			"preco": preco,
+			"category": category,
+			"obse": descricao,
+			"img_link": image_url,	
+			}
+	
+	res = req.post(url =fire_url, data = json.dumps(produto) )
+	
+	
+	print(res.text)
+		
+	
+	
+
+# simular o firebase
+
+
+def my_banco_base(aba):
+	rota = ""
+	if aba == "p":
+		rota = "/produtos"
+	elif aba == "m":
+		rota = "/mensagens"
+	elif aba == "i":
+		rota = "/interacoes"
+	elif aba == "r":
+		rota = "/reservas"
+	
+		
+		
+	
+	url = "https://bs-siteof-sell-default-rtdb.firebaseio.com"+rota+"/.json"
+	
+	res = req.get(url)
+	
+	respo= res.json()
+	return respo
+	
+	
+	
+
+def loadProd():
+	#p significa que estou a requesitar somente produtos
+	bancoBD = my_banco_base("p")
+	
+	
+	
+	linkimg = url_for('static', filename='imageProdut/carbrador.webp')
+	
+	
+	
+	prod = ""
+	for i in bancoBD:
+		
+		produto = bancoBD[i]
+		
+		nome_prod = produto["nome"]
+		preco_prod = produto["preco"]
+		num_prod = produto["numero"]
+		link_img = produto["img_link"]
+		
+		linkimg = link_img
+		
+		
+		
+		prod = prod + f"""
+	<div class="box-sell swiper-slide">
+		  <a href="/detalhes/{nome_prod+'_'+num_prod}">
+          <img style="height: 50%;" src="{linkimg}" >
+          <h5>{nome_prod}</h5>
+          <p class="pna">artigo n°: 
+          {num_prod}</p>
+          <b><p>PRECO: {preco_prod} MTN</p></b>
+          <button>comprar peca</button>
+          </a>
+        </div>
+       
+	"""
+	
+	products = prod
+	return products
+
+
+def loadProdDetalhes(prod):
+	
+	bancoBD = my_banco_base("p")
+	
+	
+	prod_link = prod.split("_")
+	
+	nome_link = prod_link[0]
+	num_link = prod_link[1]
+	
+	
+	
+	
+	
+	
+	
+	
+	linkimg = url_for('static', filename='imageProdut/carbrador.webp')
+	
+	
+	
+	prod = ""
+	for i in bancoBD:
+		
+		produto = bancoBD[i]
+		
+		nome_prod = produto["nome"]
+		
+		
+		preco_prod = produto["preco"]
+		num_prod = produto["numero"]
+		link_img = produto["img_link"]
+		detalhe_prod = produto["obse"]
+		
+		linkimg = link_img
+		
+		if nome_prod == nome_link:
+			
+			return [nome_prod,preco_prod,num_prod,linkimg,detalhe_prod]
+		
+		
+	
+	return ["error"]
+
+
+
+def loadExist(prod):
+	
+	
+	
+	return True
+
+
+
+
+def loadInteracoes():
+	
+	
+	
+	return numIntera
+
+
+def loadDash():
+	
+	dados = my_banco_base("all")
+	
+	
+	#daniel 7:25
+	
+	prod = dados["produtos"]
+	msg = dados["mensagens"]
+	intera = dados["interacoes"]
+	reserv = dados["reservas"]
+	
+	lenProd = len(prod)
+	lenMsg = len(msg)
+	lenIntera = len(intera)
+	lenReserv = len(reserv)
+	
+	dadosLen = [str(lenProd),str(lenMsg),str(lenIntera),str(lenReserv)]
+	
+	
+	reservData = ""
+	
+	for r in reserv:
+		
+		reserva = reserv[r]
+		
+		nomeR = reserva["nome"]
+		dataR =reserva["data"]
+		prodR = reserva["produto"]
+		tellR = reserva["tell"]
+		precoR = reserva["preco"]
+		numArg = reserva["artigo n"]
+		statusR = reserva["status"]
+		
+		reservData = reservData + f"""
+			<tr>
+                            <td>{dataR}</td>
+                            <td>{nomeR}</td>
+                            <td>{prodR}</td>
+                            <td>{tellR}</td>
+                            
+                            <td>{precoR}</td>
+                            <td>{numArg}</td>
+                            <td>{statusR}</td>
+                            <td><button>Editar</button></td>
+                        </tr>
+                        
+		
+		"""
+	
+	
+	
+	
+	prodData = ""
+	
+	for p in  prod:
+		produto = prod[p]
+		
+		nome_prod = produto["nome"]
+		preco_prod = produto["preco"]
+		num_prod = produto["numero"]
+		link_img = produto["img_link"]
+		
+		linkimg = link_img
+		
+		
+		
+		prodData = prodData + f"""
+	<div class="box-sell swiper-slide">
+		  <a href="/editprodutel/{nome_prod+'_'+num_prod}">
+          <img style="height: 50%;" src="{linkimg}" >
+          <h5>{nome_prod}</h5>
+          <p class="pna">artigo n°: 
+          {num_prod}</p>
+          <b><p>PRECO: {preco_prod} MTN</p></b>
+          <button>Editar produto</button>
+          </a>
+        </div>
+       
+	"""
+		
+	
+	
+	
+	MSGData = ""
+	for m in  msg:
+		
+		dadoMsg = msg[m]
+		
+		nomeMsg = dadoMsg["nome"]
+		
+		mensagem = dadoMsg["msg"]
+		
+		MSGData = MSGData +f"""<div class="msg">
+                    
+
+                        <h3 class="msg--name">{nomeMsg}</h3>
+                    
+                    
+                        <p class="msg--body">{mensagem}</p>
+                    
+                </div>"""
+	
+	
+	dadosLoad = [prodData,MSGData,reservData]
+	
+	allDados = [dadosLen,dadosLoad]
+	return allDados
+
+
+def loadSearch(dado):
+	
+	
+	dadosSh = dado
+	dados = my_banco_base("all")
+	
+	
+	#daniel 7:25
+	
+	prod = dados["produtos"]
+	
+	prodData = ""
+	addprod= False
+	for p in  prod:
+		produto = prod[p]
+		
+		nome_prod = produto["nome"]
+		preco_prod = produto["preco"]
+		num_prod = produto["numero"]
+		link_img = produto["img_link"]
+		
+		linkimg = link_img
+		
+		if " " in dadosSh:
+			dadoP = dadosSh.split(" ")
+			
+			for cada_sh in dadoP:
+				
+				if cada_sh in nome_prod:
+					addprod= True
+		else:
+			
+			if dadosSh in nome_prod:
+				addprod= True
+				
+				
+			
+			
+		
+		
+		
+		
+		
+		if addprod== True:
+			prodData = prodData + f"""
+	<div class="box-sell swiper-slide">
+		  <a href="/editprodutel/{nome_prod+'_'+num_prod}">
+          <img style="height: 50%;" src="{linkimg}" >
+          <h5>{nome_prod}</h5>
+          <p class="pna">artigo n°: 
+          {num_prod}</p>
+          <b><p>PRECO: {preco_prod} MTN</p></b>
+          <button>Editar produto</button>
+          </a>
+        </div>
+       
+	"""
+		
+		addprod= False
+	allDados = prodData
+	
+	
+	
+	return allDados
+
+
+
+def loadLoginDash(nome,passw):
+	
+	
+	
+	url = "https://bs-siteof-sell-default-rtdb.firebaseio.com/confseet/.json"
+	
+	
+	
+	
+	
+	res = req.get(url)
+	
+	respo= res.json()
+	
+	#print(str(respo)+"_ resposta")
+	print(nome,passw)
+	
+	nServer = respo["accessnameb1282"]
+	pServer = respo["accesspassa1207"]
+	
+	
+	if nServer == nome:
+		
+		if str(pServer) == str(passw):
+			#print("sim sao nomes iguais!")
+			return "da"
+		
+	#print("nao sao nomes iguais")
+	return "se"
+	
+	
+	
+def sendMsg(nome,tell,email,msg1):
+	allMSG = "Nome: "+ nome+"\n<br>Tell: "+ tell+"\n<br>Email: "+email+"\n<br>"+msg1+"\n<br>Mensagem do site a Venda."
 	
 	msg = MIMEMultipart()
 	
 	
 	msg["Subject"] = "Mensagem de: "+nome
 	msg["From"] = "mozlimoz0rc@gmail.com"
-	msg["To"] = "scaybuch@gmail.com"
+	msg["To"] = "buchsoftware@gmail.com"
 	password = "vqcmikhtvwmvooab"
 	
 	#enviando a mensagem!
@@ -161,66 +419,234 @@ def enviarMSG(nome,numero,email,dsjo):
 	return nome
 
 
-
-
-app = Flask(__name__)
-
-
-@app.route("/")
-def princi():
-	return render_template("index.html")
-
-@app.route("/contatos",methods=["GET","POST"])
-def contato():
+@app.route("/",methods=["post","get"])
+@app.route("/home",methods=["post","get"])
+def home():
+	products = loadProd()
+	a = "aa"
 	
-	nome = ""
-	numero = ""
-	email = ""
-	dsjo = ""
-	respo = None
+	
 	if request.method == "POST":
-		nome = request.form["nome_"]
-		numero = request.form["num_"]
-		email = request.form["email_"]
-		dsjo = request.form["dsejo_"]
-	
-	if nome != "":
+		
+		nome = request.form["nome"]
+		tell = request.form["tell"]
+		email = request.form["email"]
+		msg = request.form["msg"]
+		
 		
 		try:
-			respo = enviarMSG(nome,numero,email,dsjo)
+			res = sendMsg(nome,tell,email,msg)
 			
-			return render_template("contato.html",alert = f"Mensagem de {respo} enviada com sucesso! ")
+			return render_template("index.html",products=str(products),go_dash="ir ao DASH",pop = "Mensagem enviada com sucesso!")
 		except:
-			return render_template("contato.html",alert = f"{nome} Mensagem nao enviada! ")
-		
-		
+			return render_template("index.html",products=str(products),go_dash="ir ao DASH",pop = "Mensagem nao foi enviada! Erro de Conexao...")
+			
+	
+	return render_template("index.html",products=str(products),go_dash="ir ao DASH",pop = "")
+
+
+@app.route("/detalhes/<prod>")
+def detalhes(prod):
+	
+	DProd = loadProdDetalhes(prod)
+	
+	lengthProd = len(DProd)
+	
+	if lengthProd == 1:
+		return render_template("about.html")
 	else:
-		return render_template("contato.html")
+		
+		nome = DProd[0]
+		
+		nArtigo = DProd[2]
+		linkImg = DProd[3]
+		detalheProd = DProd[4]
+		precoProd = DProd[1]
+		
+		
+		
+		return render_template("detalhes.html",imgProd = linkImg,nomeProd = nome,precoProd = precoProd,detalheProd = detalheProd,linkReserv = prod)
 	
 	
-@app.route("/bschatbot",methods=["GET","POST"])
-def chat():
-	
-	if request.content_type != "application/json":
-		return render_template("chat.html")
-		#return jsonify({"resposta": "Tipo de Conteudo Ivalido!"})
-	msg = request.json.get('mensagem','').lower()
-	resposta = respostas.get(msg,"Desculpe, não entendi, ainda estou em treinamento. whatsapp: +258 879349159 da Empresa")
-	return jsonify({"resposta": resposta})
 	
 	
-	#return render_template("chat.html")
+@app.route("/editprodutel/<prod>")
+def edit_product(prod):
+	
+	DProd = loadProdDetalhes(prod)
+	
+	lengthProd = len(DProd)
+	
+	if lengthProd == 1:
+		return render_template("about.html")
+	else:
+		
+		nome = DProd[0]
+		
+		nArtigo = DProd[2]
+		linkImg = DProd[3]
+		detalheProd = DProd[4]
+		precoProd = DProd[1]
+		
+		
+		
+		return render_template("edit_product.html",imgProd = linkImg,nomeProd = nome,precoProd = precoProd,detalheProd = detalheProd,linkReserv = prod)
+	
+	
+	
+	
+	
+
+@app.route("/reserv/<prod>")
+def reserv(prod):
+	
+	loadExist = True
+	#loadExist(prod)
+	
+	nome = prod.split("_")[0]
+	artigon = prod.split("_")[1]
+	
+	
+	if loadExist == False:
+		
+		
+		return render_template("about.html")
+		
+	
+	
+	
+	
+	
+	return render_template("reserv.html",nomeProd = nome, artigoN = artigon)
 
 
 
 
-@app.route("/projectos-bsoft")
-def projetos():
-	
-	
-	return render_template("vendas_bsoft_site.html")
+
 	
 	
 
 
-app.run(debug= "True")
+
+
+@app.route('/dashboard/add_product', methods=['GET', 'POST'])
+def add_product():
+    image_url = None
+    if request.method == 'POST':
+        file = request.files.get('imagem')
+        
+        nome = request.form["nome"]
+        category = request.form["categoria"]
+        preco = request.form["preco"]
+        
+        descricao = request.form["descricao"]
+        
+        
+        if file:
+            result = cloudinary.uploader.upload(file)
+            image_url = result.get('secure_url')
+            
+            
+            addproduto(nome,category,preco,descricao,image_url)
+            
+    return render_template('add_produto.html', image_url=image_url)
+
+
+
+@app.route("/findpeca", methods=["post","get"])
+def findPeca():
+	
+	products = loadProd()
+	
+	
+	if request.method == "POST":
+		dados = request.form["in_search"]
+		
+		lsearch = loadSearch(dados)
+		
+		return render_template("findpeca.html", products = lsearch)
+	
+	
+	return render_template("findpeca.html",products = str(products))
+
+
+@app.route("/adimin%login",methods=["post","get"])
+def goAdmin():
+	
+	if request.method == "POST":
+		
+		nome2 = request.form["nome"]
+		senha3 = request.form["senha"]
+		
+		
+		res = loadLoginDash(nome2,senha3)
+		
+		if res == "da":
+			return admin()
+		else:
+			return render_template("logdash.html",info = "Senha ou Usuario Incorretos!")
+	
+	
+	return render_template("logdash.html",info = "Prencha correctamente!")
+
+
+@app.route("/dashbsboard17")
+def admin():
+	dados =  loadDash()
+	dadosNum = dados[0]
+	dadosLoad = dados[1]
+	
+	numIntera = dadosNum[0]
+	
+	numMSG = dadosNum[1]
+	numProdut  = dadosNum[2]
+	numReserv = dadosNum[3]
+	
+	loadMsg = dadosLoad[1]
+	loadProd = dadosLoad[0]
+	loadReserv = dadosLoad[2]
+	
+	
+	
+	
+	return render_template("dash.html", interacoes = numIntera, numMsg = numMSG,numProdutos = numProdut,numReservas = numReserv,mensangens = loadMsg, products = loadProd,reservas = loadReserv)
+
+
+@app.route("/contact", methods=["post","get"])
+def contact():
+	
+	
+	if request.method == "POST":
+		nome = request.form["nome"]
+		tell = request.form["tell"]
+		email = request.form["email"]
+		msg = request.form["msg"]
+		
+		
+		try:
+			res = sendMsg(nome,tell,email,msg)
+			
+			render_template("contact.html",pop = "Mensangem Enviado Com Sucesso!")
+		except:
+			render_template("contact.html",pop= "Mensagem Nao Enviado!")
+			
+		
+		
+			
+	
+	
+	return render_template("contact.html",pop = "")
+
+@app.route("/about")
+def about():
+	return render_template("about.html")
+
+@app.route("/services")
+def service():
+	return render_template("service.html")
+
+
+
+
+if __name__ == "__main__":
+    app.run(debug="False")
