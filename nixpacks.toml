@@ -1,4 +1,15 @@
 # nixpacks.toml
+[phases.setup]
+nixPkgs = ["python311"]
+
+[phases.install]
+cmds = [
+  "echo 'Instalando todas coisas...'",
+  "pip install -r requirements.txt",
+  "echo 'Rodando migrações ou comandos personalizados...'",
+  "python -m flask db upgrade"
+]
+
 
 [start]
 cmd = "gunicorn app:app"
