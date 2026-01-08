@@ -229,6 +229,46 @@ p {
 
 
 
+.apps-section {
+  padding: 40px 16px;
+  background: #f5f7fa;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+.apps-link {
+  text-decoration: none;
+}
+
+.card-go-apps {
+  background: linear-gradient(135deg, #1e88e5, #1565c0);
+  color: #fff;
+  padding: 22px 26px;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* Hover elegante */
+.card-go-apps:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.25);
+}
+
+/* Mobile first */
+@media (max-width: 600px) {
+  .card-go-apps {
+    font-size: 1rem;
+    padding: 18px;
+  }
+}
 
 
 
