@@ -219,7 +219,15 @@ def projetos():
 	
 	
 	return render_template("vendas_bsoft_site.html")
+
+@app.route("/free-apps")
+def apps_free():
+	
+	
+	return render_template("free_appsbs.html")
 	
 	
 
 
+if __name__ == "__main__":
+    app.run(debug="False")
